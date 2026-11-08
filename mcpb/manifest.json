@@ -31,6 +31,8 @@
     { "name": "ah_get_cart", "description": "Je winkelmandje bekijken" },
     { "name": "ah_set_cart_items", "description": "Producten toevoegen of hoeveelheden wijzigen in één keer (0 verwijdert)" },
     { "name": "ah_clear_cart", "description": "Winkelmandje leegmaken" },
+    { "name": "ah_get_delivery_slots", "description": "Leveringsmomenten voor je adres (lokale tijden, prijs, volzet)" },
+    { "name": "ah_get_orders_open", "description": "Lopende bestellingen met leverdag, tijdvak en aanpasbaar" },
     { "name": "ah_get_orders", "description": "Geplande leveringen en afhalingen" },
     { "name": "ah_get_order_details", "description": "Inhoud van een bestelling" },
     { "name": "ah_get_receipts", "description": "Recente kassabonnen" },

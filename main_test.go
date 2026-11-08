@@ -66,6 +66,14 @@ func (f *fakeAH) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, `{"data":{"product":null}}`)
 		case strings.Contains(string(body), "FetchProductDetails"):
 			io.WriteString(w, `{"data":{"product":{"id":54074,"title":"AH Komkommer","brand":"AH","category":"Groente, aardappelen/Komkommer","summary":"","icons":[],"salesUnitSize":"1 stuk","priceV2":{"now":{"amount":0.99},"was":{"amount":1.29}},"availability":{"online":{"status":"AVAILABLE"},"isOrderable":true},"imagePack":[]}}}`)
+		case strings.Contains(string(body), "FetchMember"):
+			io.WriteString(w, `{"data":{"member":{"id":1,"address":{"street":"Teststraat","houseNumber":1,"postalCode":"9308","city":"HOFSTADE","countryCode":"BEL"}}}}`)
+		case strings.Contains(string(body), "orderDeliverySlots"):
+			io.WriteString(w, `{"data":{"orderDeliverySlots":[{"date":"2026-11-16T23:00:00.000Z","isFullyBooked":false,"slots":[
+			 {"startTime":"2026-11-17T15:00:00.000Z","endTime":"2026-11-17T21:00:00.000Z","isFullyBooked":false,"serviceCharge":{"price":{"amount":5.99}}},
+			 {"startTime":"2026-11-17T15:00:00.000Z","endTime":"2026-11-17T17:00:00.000Z","isFullyBooked":true,"serviceCharge":{"price":{"amount":7.99}}}]}]}}`)
+		case strings.Contains(string(body), "OrderFulfillments"):
+			io.WriteString(w, `{"data":{"orderFulfillments":{"result":[{"orderId":42,"statusCode":3,"statusDescription":"Gepland","shoppingType":"DELIVERY","modifiable":true,"totalPrice":{"totalPrice":{"amount":52.1}},"delivery":{"status":"PLANNED","slot":{"date":"2026-11-17","startTime":"16:00","endTime":"22:00"}}}]}}}`)
 		default:
 			io.WriteString(w, `{"data":{"product":{"id":54074,"tradeItem":{"nutritions":[{"nutrients":[{"type":"PROTEIN","name":"Eiwitten","value":"0.6 g"}]}]}}}}`)
 		}

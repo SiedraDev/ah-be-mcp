@@ -415,6 +415,22 @@ func registerTools(s *server.MCPServer) {
 		return out, err
 	}, "ah_get_bonus_periods", "Bonus weeks: the current one and, a few days ahead, next week (start_date and end_date). Use a start date with ah_get_personal_bonus.")
 
+	add(s, needLogin, func(ctx context.Context, _ mcp.CallToolRequest) (any, error) {
+		slots, err := deliverySlots(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"slots": slots}, nil
+	}, "ah_get_delivery_slots", "Leveringsmomenten voor het profieladres: lokale datum, start, einde, bezorgkost, volzet. Alleen lezen.")
+
+	add(s, needLogin, func(ctx context.Context, _ mcp.CallToolRequest) (any, error) {
+		orders, err := openOrders(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"orders": orders}, nil
+	}, "ah_get_orders_open", "Lopende (open) bestellingen met leverdag, tijdvak, of ze nog aanpasbaar zijn en totaal. Alleen lezen.")
+
 	add(s, needLogin, func(ctx context.Context, r mcp.CallToolRequest) (any, error) {
 		return productsOut(client.GetPersonalBonus(ctx, r.GetString("start_date", "")))
 	}, "ah_get_personal_bonus", "Your personal bonus offers (Bonus Box) for the current week, or for the week starting at start_date.",
