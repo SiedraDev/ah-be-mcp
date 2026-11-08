@@ -10,8 +10,8 @@ github.com/google/jsonschema-go v0.4.2 h1:tmrUohrwoLZZS/P3x7ex0WAVknEkBZM46iALbc
 github.com/google/jsonschema-go v0.4.2/go.mod h1:r5quNTdLOYEz95Ru18zA0ydNbBuYoo9tgaYcxEYhJVE=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/gwillem/appie-go v0.0.13-0.20260923073138-65f41abdeaff h1:LupXvxRzodNxcA9WC6DZkDHSiDz6l+6LhVoubUBT+Tc=
-github.com/gwillem/appie-go v0.0.13-0.20260923073138-65f41abdeaff/go.mod h1:HQRN+5VMvQ0YJPY2YcjFpdkS2Rzup6/CG2bbHEMyTxs=
+github.com/gwillem/appie-go v0.0.13-0.20261108195832-40d42fcde481 h1:8LOI1smVPclnX9JVmFhEz9NJkpmxw9pqyJdJRQryomk=
+github.com/gwillem/appie-go v0.0.13-0.20261108195832-40d42fcde481/go.mod h1:HQRN+5VMvQ0YJPY2YcjFpdkS2Rzup6/CG2bbHEMyTxs=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=

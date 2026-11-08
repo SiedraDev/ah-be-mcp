@@ -3,7 +3,7 @@ module github.com/FreDeRoover/ah-be-mcp
 go 1.25.5
 
 require (
-	github.com/gwillem/appie-go v0.0.13-0.20260923073138-65f41abdeaff
+	github.com/gwillem/appie-go v0.0.13-0.20261108195832-40d42fcde481
 	github.com/mark3labs/mcp-go v1.1.1
 )
 

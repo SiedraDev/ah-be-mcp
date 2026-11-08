@@ -60,7 +60,15 @@ func (f *fakeAH) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasPrefix(r.URL.Path, "/mobile-services/product/detail/v4/fir/"):
 		io.WriteString(w, `{"productCard":{"webshopId":54074,"title":"AH Komkommer"}}`)
 	case r.URL.Path == "/graphql":
-		io.WriteString(w, `{"data":{"product":{"id":54074,"tradeItem":{"nutritions":[{"nutrients":[{"type":"PROTEIN","name":"Eiwitten","value":"0.6 g"}]}]}}}}`)
+		body, _ := io.ReadAll(r.Body)
+		switch {
+		case strings.Contains(string(body), "FetchProductDetails") && strings.Contains(string(body), `"productId":999`):
+			io.WriteString(w, `{"data":{"product":null}}`)
+		case strings.Contains(string(body), "FetchProductDetails"):
+			io.WriteString(w, `{"data":{"product":{"id":54074,"title":"AH Komkommer","brand":"AH","category":"Groente, aardappelen/Komkommer","summary":"","icons":[],"salesUnitSize":"1 stuk","priceV2":{"now":{"amount":0.99},"was":{"amount":1.29}},"availability":{"online":{"status":"AVAILABLE"},"isOrderable":true},"imagePack":[]}}}`)
+		default:
+			io.WriteString(w, `{"data":{"product":{"id":54074,"tradeItem":{"nutritions":[{"nutrients":[{"type":"PROTEIN","name":"Eiwitten","value":"0.6 g"}]}]}}}}`)
+		}
 	case r.URL.Path == "/mobile-services/bonuspage/v3/metadata":
 		io.WriteString(w, `{"periods":[{"bonusStartDate":"2026-10-05","bonusEndDate":"2026-10-11"},{"bonusStartDate":"2026-10-12","bonusEndDate":"2026-10-18"}]}`)
 	case r.URL.Path == "/mobile-services/bonuspage/v1/personal":
