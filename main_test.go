@@ -70,7 +70,19 @@ func (f *fakeAH) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, `{"data":{"product":{"id":54074,"tradeItem":{"nutritions":[{"nutrients":[{"type":"PROTEIN","name":"Eiwitten","value":"0.6 g"}]}]}}}}`)
 		}
 	case r.URL.Path == "/mobile-services/bonuspage/v3/metadata":
-		io.WriteString(w, `{"periods":[{"bonusStartDate":"2026-10-05","bonusEndDate":"2026-10-11"},{"bonusStartDate":"2026-10-12","bonusEndDate":"2026-10-18"}]}`)
+		io.WriteString(w, `{"periods":[
+		 {"bonusStartDate":"2026-11-02","bonusEndDate":"2026-11-08","tabs":[{"urlMetadataList":[{"bonusType":"NATIONAL","description":"Oud"}]}]},
+		 {"bonusStartDate":"2026-11-09","bonusEndDate":"2026-11-15","tabs":[{"urlMetadataList":[{"bonusType":"NATIONAL","description":"Vlees"},{"bonusType":"NATIONAL","description":"Glutenvrij"},{"bonusType":"PERSONAL","description":"Box"}]}]}]}`)
+	case r.URL.Path == "/mobile-services/bonuspage/v2/section":
+		q := r.URL.Query()
+		if q.Get("category") == "Glutenvrij" {
+			w.WriteHeader(424)
+			io.WriteString(w, `{"status":424,"message":"Failed dependency"}`)
+			return
+		}
+		io.WriteString(w, `{"bonusGroupOrProducts":[
+		 {"bonusGroup":{"segmentId":819494,"segmentDescription":"AH Varkensgehakt gekruid of Italiaans 500 gram","discountDescription":"1 EURO KORTING","category":"Vlees","salesUnitSize":"Per schaal","exampleFromPrice":3.99,"exampleForPrice":2.99,"bonusStartDate":"2026-11-09","bonusEndDate":"2026-11-15","products":[]}},
+		 {"product":{"webshopId":543332,"title":"AH Scharrel kipfilet naturel","salesUnitSize":"150 g","priceBeforeBonus":3.49,"currentPrice":3.49,"bonusMechanism":"1 + 1 gratis","mainCategory":"Vlees","bonusStartDate":"2026-11-09","bonusEndDate":"2026-11-15"}}]}`)
 	case r.URL.Path == "/mobile-services/bonuspage/v1/personal":
 		f.personalQuery = r.URL.RawQuery
 		io.WriteString(w, `{"bonusGroupOrProducts":[{"bonusGroup":{"id":"338409","segmentDescription":"Kattenvoer","discountDescription":"25% KORTING"}}]}`)
@@ -278,7 +290,8 @@ func TestGetProducts(t *testing.T) {
 func TestBonusPeriodsAndPersonalBonus(t *testing.T) {
 	s, f := setup(t, false)
 	text, isErr := call(t, s, "ah_get_bonus_periods", nil)
-	if isErr || !strings.Contains(text, `"start_date":"2026-10-12"`) {
+	if isErr || !strings.Contains(text, `"start_date":"2026-11-09"`) ||
+		!strings.Contains(text, `"start_date":"2026-11-02"`) {
 		t.Fatalf("periods: %q isErr=%v", text, isErr)
 	}
 	// personal bonus is member-specific: anonymous sessions are refused
@@ -418,5 +431,31 @@ func TestCheckUpdate(t *testing.T) {
 	status = http.StatusInternalServerError
 	if text, isErr := call(t, s, "ah_check_update", nil); !isErr || !strings.Contains(text, "GitHub") {
 		t.Errorf("want a GitHub error, got %q isErr=%v", text, isErr)
+	}
+}
+
+func TestGetBonusForDate(t *testing.T) {
+	s, _ := setup(t, false)
+	text, isErr := call(t, s, "ah_get_bonus", map[string]any{"date": "2026-11-10"})
+	if isErr {
+		t.Fatalf("error: %s", text)
+	}
+	var out struct {
+		Date    string      `json:"date"`
+		Items   []bonusItem `json:"items"`
+		Skipped []string    `json:"skipped_categories"`
+	}
+	if err := json.Unmarshal([]byte(text), &out); err != nil {
+		t.Fatal(err)
+	}
+	if out.Date != "2026-11-10" || len(out.Items) != 2 || len(out.Skipped) != 1 || out.Skipped[0] != "Glutenvrij" {
+		t.Fatalf("unexpected: %+v", out)
+	}
+	kip := out.Items[1]
+	if kip.ProductID != 543332 || kip.MinQty != 2 || math.Abs(kip.EffectiveUnitPrice-1.75) > 0.001 {
+		t.Fatalf("kip: %+v", kip)
+	}
+	if out.Items[0].SegmentID != 819494 || out.Items[0].EffectiveUnitPrice != 2.99 {
+		t.Fatalf("gehakt: %+v", out.Items[0])
 	}
 }

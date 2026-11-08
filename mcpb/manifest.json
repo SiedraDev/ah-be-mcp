@@ -24,7 +24,7 @@
     { "name": "ah_search_products", "description": "Producten zoeken, eventueel alleen bonus" },
     { "name": "ah_get_product", "description": "Details en voedingswaarden van een product" },
     { "name": "ah_get_products", "description": "Details en voedingswaarden van tot 20 producten tegelijk" },
-    { "name": "ah_get_bonus", "description": "Huidige bonusaanbiedingen" },
+    { "name": "ah_get_bonus", "description": "Nationale bonus per datum, met effectieve stukprijs (min_qty, effective_unit_price)" },
     { "name": "ah_get_bonus_group", "description": "Producten in een bonusgroep" },
     { "name": "ah_get_bonus_periods", "description": "Bonusweken, ook die van volgende week" },
     { "name": "ah_get_personal_bonus", "description": "Je persoonlijke bonusaanbiedingen" },

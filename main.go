@@ -361,9 +361,18 @@ func registerTools(s *server.MCPServer) {
 		num("product_id", "Product id from ah_search_products", true),
 		mcp.WithBoolean("nutrition", mcp.Description("Include nutritional info")))
 
-	add(s, needAnon, func(ctx context.Context, _ mcp.CallToolRequest) (any, error) {
-		return productsOut(client.GetBonusProducts(ctx))
-	}, "ah_get_bonus", "Current bonus offers. Group entries carry a bonusSegmentId; expand with ah_get_bonus_group.")
+	add(s, needAnon, func(ctx context.Context, r mcp.CallToolRequest) (any, error) {
+		date := r.GetString("date", "")
+		items, skipped, err := bonusFor(ctx, date)
+		if err != nil {
+			return nil, err
+		}
+		if date == "" {
+			date = time.Now().Format("2006-01-02")
+		}
+		return map[string]any{"date": date, "items": items, "skipped_categories": skipped}, nil
+	}, "ah_get_bonus", "Nationale AH-Bonus die geldt op een datum (default vandaag). Per item: mechaniek, prijs voor/na, min_qty en effective_unit_price (stukprijs bij aankoop van min_qty). Groepen hebben segment_id; uitklappen met ah_get_bonus_group.",
+		str("date", "Datum YYYY-MM-DD waarop de bonus moet gelden (bv. de leverdag)", false))
 
 	add(s, needAnon, func(ctx context.Context, r mcp.CallToolRequest) (any, error) {
 		return productsOut(client.GetBonusGroupProducts(ctx, r.GetString("segment_id", "")))
