@@ -75,7 +75,7 @@ func (f *fakeAH) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		 {"bonusStartDate":"2026-11-09","bonusEndDate":"2026-11-15","tabs":[{"urlMetadataList":[{"bonusType":"NATIONAL","description":"Vlees"},{"bonusType":"NATIONAL","description":"Glutenvrij"},{"bonusType":"PERSONAL","description":"Box"}]}]}]}`)
 	case r.URL.Path == "/mobile-services/bonuspage/v2/section":
 		q := r.URL.Query()
-		if q.Get("category") == "Glutenvrij" {
+		if c := q.Get("category"); c == "Glutenvrij" || c == "Oud" {
 			w.WriteHeader(424)
 			io.WriteString(w, `{"status":424,"message":"Failed dependency"}`)
 			return
@@ -457,5 +457,17 @@ func TestGetBonusForDate(t *testing.T) {
 	}
 	if out.Items[0].SegmentID != 819494 || out.Items[0].EffectiveUnitPrice != 2.99 {
 		t.Fatalf("gehakt: %+v", out.Items[0])
+	}
+}
+
+func TestGetBonusAllCategoriesFail(t *testing.T) {
+	s, _ := setup(t, false)
+	// 2026-11-03 only has the "Oud" category, which the fake fails.
+	text, isErr := call(t, s, "ah_get_bonus", map[string]any{"date": "2026-11-03"})
+	if !isErr {
+		t.Fatalf("expected error when every category fails, got: %s", text)
+	}
+	if !strings.Contains(text, "faalden") {
+		t.Fatalf("error should name the failure: %s", text)
 	}
 }

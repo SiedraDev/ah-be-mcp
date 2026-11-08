@@ -147,10 +147,15 @@ func bonusFor(ctx context.Context, date string) ([]bonusItem, []string, error) {
 	if len(cats) == 0 {
 		return nil, nil, fmt.Errorf("geen bonusperiode bekend voor %s", date)
 	}
-	var items []bonusItem
+	items := []bonusItem{}
 	skipped := []string{}
 	seen := map[string]bool{}
+	var lastErr error
+	succeeded := 0
 	for _, cat := range cats {
+		if err := ctx.Err(); err != nil {
+			return nil, nil, err
+		}
 		v := url.Values{}
 		v.Set("application", "AHBEWEBSHOP")
 		v.Set("date", date)
@@ -158,9 +163,11 @@ func bonusFor(ctx context.Context, date string) ([]bonusItem, []string, error) {
 		v.Set("category", cat)
 		var sec bonusSection
 		if err := client.DoRequest(ctx, "GET", "/mobile-services/bonuspage/v2/section?"+v.Encode(), nil, &sec); err != nil {
+			lastErr = err
 			skipped = append(skipped, cat)
 			continue
 		}
+		succeeded++
 		for _, it := range sec.Items {
 			var b bonusItem
 			switch {
@@ -185,6 +192,12 @@ func bonusFor(ctx context.Context, date string) ([]bonusItem, []string, error) {
 			}
 			items = append(items, b)
 		}
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, nil, err
+	}
+	if succeeded == 0 {
+		return nil, nil, fmt.Errorf("alle %d bonuscategorieën faalden voor %s: %w", len(cats), date, lastErr)
 	}
 	return items, skipped, nil
 }
