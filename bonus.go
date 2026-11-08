@@ -170,9 +170,11 @@ func bonusFor(ctx context.Context, date string) ([]bonusItem, []string, error) {
 		succeeded++
 		for _, it := range sec.Items {
 			var b bonusItem
+			isGroup := false
 			switch {
 			case it.Group != nil:
 				g := it.Group
+				isGroup = true
 				b = bonusItem{SegmentID: g.SegmentID, Title: g.Description, Category: g.Category, Mechanism: g.Discount,
 					Size: g.Size, PriceBefore: g.From, PricePromo: g.For, PeriodStart: g.Start, PeriodEnd: g.End}
 			case it.Product != nil:
@@ -188,7 +190,17 @@ func bonusFor(ctx context.Context, date string) ([]bonusItem, []string, error) {
 			}
 			seen[key] = true
 			if q, u, ok := parseMechanism(b.Mechanism, b.PriceBefore); ok {
-				b.MinQty, b.EffectiveUnitPrice = q, float64(int(u*100+0.5))/100
+				if isGroup && b.PricePromo > 0 {
+					// AH geeft voor groepen het totaal voor de promo-hoeveelheid
+					// (exampleFrom/ForPrice); reken om naar prijzen per stuk.
+					n := float64(q)
+					b.PriceBefore = round2(b.PriceBefore / n)
+					b.PricePromo = round2(b.PricePromo / n)
+					u = b.PricePromo
+					b.MinQty, b.EffectiveUnitPrice = q, u
+				} else {
+					b.MinQty, b.EffectiveUnitPrice = q, round2(u)
+				}
 			}
 			items = append(items, b)
 		}
@@ -201,3 +213,5 @@ func bonusFor(ctx context.Context, date string) ([]bonusItem, []string, error) {
 	}
 	return items, skipped, nil
 }
+
+func round2(f float64) float64 { return float64(int(f*100+0.5)) / 100 }

@@ -95,6 +95,7 @@ func (f *fakeAH) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		io.WriteString(w, `{"bonusGroupOrProducts":[
 		 {"bonusGroup":{"segmentId":819494,"segmentDescription":"AH Varkensgehakt gekruid of Italiaans 500 gram","discountDescription":"1 EURO KORTING","category":"Vlees","salesUnitSize":"Per schaal","exampleFromPrice":3.99,"exampleForPrice":2.99,"bonusStartDate":"2026-11-09","bonusEndDate":"2026-11-15","products":[]}},
+		 {"bonusGroup":{"segmentId":700001,"segmentDescription":"AH Scharrelkipfilet naturel 150 gram","discountDescription":"1 + 1 GRATIS","category":"Vlees","salesUnitSize":"Per stuk","exampleFromPrice":6.98,"exampleForPrice":3.49,"bonusStartDate":"2026-11-09","bonusEndDate":"2026-11-15","products":[]}},
 		 {"product":{"webshopId":543332,"title":"AH Scharrel kipfilet naturel","salesUnitSize":"150 g","priceBeforeBonus":3.49,"currentPrice":3.49,"bonusMechanism":"1 + 1 gratis","mainCategory":"Vlees","bonusStartDate":"2026-11-09","bonusEndDate":"2026-11-15"}}]}`)
 	case r.URL.Path == "/mobile-services/bonuspage/v1/personal":
 		f.personalQuery = r.URL.RawQuery
@@ -461,12 +462,15 @@ func TestGetBonusForDate(t *testing.T) {
 	if err := json.Unmarshal([]byte(text), &out); err != nil {
 		t.Fatal(err)
 	}
-	if out.Date != "2026-11-10" || len(out.Items) != 2 || len(out.Skipped) != 1 || out.Skipped[0] != "Glutenvrij" {
+	if out.Date != "2026-11-10" || len(out.Items) != 3 || len(out.Skipped) != 1 || out.Skipped[0] != "Glutenvrij" {
 		t.Fatalf("unexpected: %+v", out)
 	}
-	kip := out.Items[1]
+	kip := out.Items[2]
 	if kip.ProductID != 543332 || kip.MinQty != 2 || math.Abs(kip.EffectiveUnitPrice-1.75) > 0.001 {
 		t.Fatalf("kip: %+v", kip)
+	}
+	if g := out.Items[1]; g.SegmentID != 700001 || g.MinQty != 2 || g.PriceBefore != 3.49 || g.PricePromo != 1.75 || g.EffectiveUnitPrice != 1.75 {
+		t.Fatalf("kip-groep: %+v", g)
 	}
 	if out.Items[0].SegmentID != 819494 || out.Items[0].EffectiveUnitPrice != 2.99 {
 		t.Fatalf("gehakt: %+v", out.Items[0])
