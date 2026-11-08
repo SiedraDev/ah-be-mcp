@@ -36,3 +36,23 @@ func TestParseMechanism(t *testing.T) {
 		}
 	}
 }
+
+func TestBundleCount(t *testing.T) {
+	cases := map[string]int{
+		"2 pakjes":                       2,
+		"3 pakken van 8 stuks, 320 gram": 3,
+		"2 Pakjes":                       2,
+		"6 stuks":                        6,
+		"ca. 350 g":                      0,
+		"Per schaal":                     0,
+		"150 g":                          0,
+		"500 gram":                       0,
+		"":                               0,
+		"2 pakjesachtig":                 0,
+	}
+	for in, want := range cases {
+		if got := bundleCount(in); got != want {
+			t.Errorf("bundleCount(%q) = %d, want %d", in, got, want)
+		}
+	}
+}

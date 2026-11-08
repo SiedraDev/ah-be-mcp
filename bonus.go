@@ -190,7 +190,13 @@ func bonusFor(ctx context.Context, date string) ([]bonusItem, []string, error) {
 			}
 			seen[key] = true
 			if q, u, ok := parseMechanism(b.Mechanism, b.PriceBefore); ok {
-				if isGroup && b.PricePromo > 0 {
+				if !isGroup && q > 1 && bundleCount(b.Size) == q && b.PricePromo > 0 {
+					// Product is een bundel van q stuks ("2 pakjes"): prijzen zijn totalen.
+					n := float64(q)
+					b.PriceBefore = round2(b.PriceBefore / n)
+					b.PricePromo = round2(b.PricePromo / n)
+					b.MinQty, b.EffectiveUnitPrice = q, b.PricePromo
+				} else if isGroup && b.PricePromo > 0 {
 					// AH geeft voor groepen het totaal voor de promo-hoeveelheid
 					// (exampleFrom/ForPrice); reken om naar prijzen per stuk.
 					n := float64(q)
@@ -215,3 +221,14 @@ func bonusFor(ctx context.Context, date string) ([]bonusItem, []string, error) {
 }
 
 func round2(f float64) float64 { return float64(int(f*100+0.5)) / 100 }
+
+var reBundle = regexp.MustCompile(`(?i)^(\d+)\s+(stuks?|pakjes?|pakken|pak|dozen|doos|zakken|zak|schalen|schaal|potten|pot|blikken|blik|flessen|fles|tubes|tube|bakjes|bakje|rollen|rol|flacons)\b`)
+
+// bundleCount geeft N als size een bundel van N verpakkingen beschrijft
+// ("2 pakjes", "3 pakken van 8 stuks"), anders 0.
+func bundleCount(size string) int {
+	if m := reBundle.FindStringSubmatch(strings.TrimSpace(size)); m != nil {
+		return atoi(m[1])
+	}
+	return 0
+}
