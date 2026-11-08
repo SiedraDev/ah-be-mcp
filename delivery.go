@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"time"
+	_ "time/tzdata" // embed zone data: no panic without system tzdata
 )
 
 const slotsQuery = `query FetchDeliveryOrderSlotDays($address: MemberAddressInput!) {
@@ -13,7 +14,13 @@ const slotsQuery = `query FetchDeliveryOrderSlotDays($address: MemberAddressInpu
   }
 }`
 
-var brussels = func() *time.Location { l, _ := time.LoadLocation("Europe/Brussels"); return l }()
+var brussels = func() *time.Location {
+	l, err := time.LoadLocation("Europe/Brussels")
+	if err != nil {
+		return time.FixedZone("CET", 3600) // fallback; tzdata is embedded so this should not happen
+	}
+	return l
+}()
 
 type deliverySlot struct {
 	Date  string  `json:"date"`
@@ -64,9 +71,12 @@ func deliverySlots(ctx context.Context) ([]deliverySlot, error) {
 		for _, s := range d.Slots {
 			date, start, err := localHM(s.Start)
 			if err != nil {
-				continue
+				return nil, fmt.Errorf("leveringsmoment met ongeldige starttijd %q: %w", s.Start, err)
 			}
-			_, end, _ := localHM(s.End)
+			_, end, err := localHM(s.End)
+			if err != nil {
+				return nil, fmt.Errorf("leveringsmoment met ongeldige eindtijd %q: %w", s.End, err)
+			}
 			out = append(out, deliverySlot{Date: date, Start: start, End: end, Price: s.Fee.Price.Amount, Full: s.Full})
 		}
 	}

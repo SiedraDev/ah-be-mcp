@@ -36,6 +36,7 @@ type fakeAH struct {
 	hits    int
 
 	personalQuery string
+	slotsJSON     string // overrides the orderDeliverySlots response when set
 }
 
 func (f *fakeAH) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +70,10 @@ func (f *fakeAH) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case strings.Contains(string(body), "FetchMember"):
 			io.WriteString(w, `{"data":{"member":{"id":1,"address":{"street":"Teststraat","houseNumber":1,"postalCode":"9308","city":"HOFSTADE","countryCode":"BEL"}}}}`)
 		case strings.Contains(string(body), "orderDeliverySlots"):
+			if f.slotsJSON != "" {
+				io.WriteString(w, f.slotsJSON)
+				return
+			}
 			io.WriteString(w, `{"data":{"orderDeliverySlots":[{"date":"2026-11-16T23:00:00.000Z","isFullyBooked":false,"slots":[
 			 {"startTime":"2026-11-17T15:00:00.000Z","endTime":"2026-11-17T21:00:00.000Z","isFullyBooked":false,"serviceCharge":{"price":{"amount":5.99}}},
 			 {"startTime":"2026-11-17T15:00:00.000Z","endTime":"2026-11-17T17:00:00.000Z","isFullyBooked":true,"serviceCharge":{"price":{"amount":7.99}}}]}]}}`)
